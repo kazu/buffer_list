@@ -111,13 +111,13 @@ func (l *List) Init(first_value interface{}) *List {
 	if l.Used == nil {
 		l.Value_inf = first_value
 		l.SizeData = int64(reflect.TypeOf(first_value).Size())
+		l.SizeElm = int64(reflect.TypeOf(Element{}).Size())
 		l.elms = make([]byte, DEFAULT_BUF_SIZE*l.SizeElm,
 			DEFAULT_BUF_SIZE*l.SizeElm)
 		l.datas = make([]byte, DEFAULT_BUF_SIZE*l.SizeData,
 			DEFAULT_BUF_SIZE*l.SizeData)
 
 		elm := (*Element)(unsafe.Pointer(&l.elms[0]))
-		l.SizeElm = int64(reflect.TypeOf(elm).Size())
 		elm.value = unsafe.Pointer(&l.datas[0])
 		elm.prev = nil
 		elm.next = nil
