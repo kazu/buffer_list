@@ -44,7 +44,9 @@ func (l *List) getElemData(idx int64) *Element {
 	elm.value = unsafe.Pointer(&l.datas[int(l.SizeData)*int(idx)])
 	return elm
 }
-
+func (l *List) GetElement() *Element {
+	return l.Used
+}
 func (e *Element) Next() *Element {
 	if e.next != nil {
 		return e.next
@@ -101,7 +103,10 @@ func (l *List) InsertNewElem(at *Element) *Element {
 	n := at.next
 	at.next = e
 	e.prev = n
-	n.prev = e
+	if n != nil {
+		n.prev = e
+		e.list.Used.prev = e
+	}
 	e.list = l
 	l.Len++
 	return e
