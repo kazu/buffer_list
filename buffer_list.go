@@ -133,8 +133,9 @@ func (l *List) Init(first_value interface{}) *List {
 
 		elm := (*Element)(unsafe.Pointer(&l.elms[0]))
 		elm.value = unsafe.Pointer(&l.datas[0])
-		elm.prev = nil
+		elm.prev = elm
 		elm.next = nil
+		elm.list = l
 		l.Used = elm
 		l.Freed = nil
 		l.Used_idx = 1
