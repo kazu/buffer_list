@@ -90,7 +90,7 @@ func (e *Element) Free() {
 func (l *List) InsertNewElem(at *Element) *Element {
 	var e *Element
 
-	if l != at.l {
+	if l != at.list {
 		return nil
 	}
 
