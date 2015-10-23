@@ -2,7 +2,7 @@
 go Package  double linked list with (slice like) sequencial buffer
 
 # example
-
+```go
 type Hoge struct {
   a int64
   b int64
@@ -15,3 +15,11 @@ hoge.a = 200
 hoge.b = 500
 
 
+cur := blist.GetElement()
+new_e := blist.InsertNewElem(cur)
+hoge2 := (*Hoge)(new_e.Value())
+hoge2.a = 222
+hoge2.b = 2222
+
+
+```
