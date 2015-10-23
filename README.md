@@ -1,5 +1,5 @@
 # buffer_list
-go Package  double linked list with seuqnecial buffer
+go Package  double linked list with (slice like) sequencial buffer
 
 # example
 
