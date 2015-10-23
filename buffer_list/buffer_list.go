@@ -91,6 +91,7 @@ func (l *List) InsertNewElem(at *Element) *Element {
 	var e *Element
 	if l.Freed == nil {
 		e = l.getElemData(l.Used_idx)
+
 		l.Used_idx += 1
 	} else {
 		e = l.Freed
@@ -100,14 +101,17 @@ func (l *List) InsertNewElem(at *Element) *Element {
 			l.Freed = l.Freed.next
 		}
 	}
+	e.list = l
 	n := at.next
 	at.next = e
-	e.prev = n
+	e.prev = at
 	if n != nil {
 		n.prev = e
+		e.next = n
+	} else {
 		e.list.Used.prev = e
 	}
-	e.list = l
+
 	l.Len++
 	return e
 }
