@@ -89,6 +89,11 @@ func (e *Element) Free() {
 }
 func (l *List) InsertNewElem(at *Element) *Element {
 	var e *Element
+
+	if l != at.l {
+		return nil
+	}
+
 	if l.Freed == nil {
 		e = l.getElemData(l.Used_idx)
 
