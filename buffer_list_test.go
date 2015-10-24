@@ -48,3 +48,26 @@ func TestBufferListInsertNewElem(t *testing.T) {
 		t.Error("data2.a != 2")
 	}
 }
+
+func TestBufferListCreate10(t *testing.T) {
+
+	list := createList()
+	var data *TestData
+	var e *Element
+	for i := 1; i < 10; i++ {
+		e = list.InsertNewElem(list.Back())
+		data = (*TestData)(e.Value())
+		data.a = int64(i) * 1
+		data.b = int32(i) * 11
+	}
+
+	if list.Len != 10 {
+		t.Error("list.len != 10")
+	}
+
+	data = (*TestData)(list.Back().Prev().Value())
+
+	if data.b != 88 {
+		t.Error("data.b != 88", data.b)
+	}
+}
