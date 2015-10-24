@@ -2,6 +2,23 @@
 // Use of this source code is governed by MPL-2.0 license tha can be
 // found in the LICENSE file
 
+// Package buffer_list implements a double linked list with sequencial buffer data.
+//
+// To Get New First Data from buffer_list(l is a *List)
+//		type Hoge Struct {
+//			a int
+//			b int
+//		}
+//		l := buffer_list.New(Hoge{})
+//		hoge := (*Hoge)(l.GetElement(),Value())
+//		hoge.a = 1
+//		hoge.b = 2
+// To iterate over a list
+//		for e := l.Front(); e != nil ; e = e.Next() {
+//			a := (*Hoge)(e.Value())  // Hoge is Value type
+//			// do something
+//		}
+
 package buffer_list
 
 import (
