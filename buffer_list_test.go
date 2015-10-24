@@ -2,7 +2,6 @@ package buffer_list
 
 import (
 	"testing"
-	"time"
 )
 
 type TestData struct {
@@ -50,44 +49,54 @@ func TestBufferListInsertNewElem(t *testing.T) {
 	}
 }
 
-func TestBufferListCreate10(t *testing.T) {
+func TestBufferListCreate1000(t *testing.T) {
 
 	list := createList()
 	var data *TestData
 	var e *Element
-	for i := 1; i < 10; i++ {
+	for i := 1; i < 1000; i++ {
 		e = list.InsertNewElem(list.Back())
 		data = (*TestData)(e.Value())
 		data.a = int64(i) * 1
 		data.b = int32(i) * 11
 	}
 
-	if list.Len != 10 {
+	if list.Len != 1000 {
 		t.Error("list.len != 10")
 	}
 
 	data = (*TestData)(list.Back().Prev().Value())
 
-	if data.b != 88 {
-		t.Error("data.b != 88", data.b)
+	if data.b != 998*11 {
+		t.Error("data.b != 998*11", data.b)
 	}
 }
 
-func TestBufferListConcurrentCreate10(t *testing.T) {
+func TestBufferListConcurrentCreate1000(t *testing.T) {
 
 	list := createList()
-	for i := 1; i < 10; i++ {
-		go func(list *List, i int) {
-			ee := list.InsertNewElem(list.Back())
-			tdata := (*TestData)(ee.Value())
-			tdata.a = int64(i) * 1
-			tdata.b = int32(i) * 11
-		}(list, i)
+	fin := make(chan bool, 10)
+
+	c_elm := func(list *List, i int, fin chan bool) {
+		ee := list.InsertNewElem(list.Back())
+		tdata := (*TestData)(ee.Value())
+		tdata.a = int64(i) * 1
+		tdata.b = int32(i) * 11
+		fin <- true
 	}
 
-	time.Sleep(time.Second)
+	for i := 1; i < 1000; i++ {
+		go c_elm(list, i, fin)
+	}
 
-	if list.Len != 10 {
-		t.Error("list.len != 10")
+	for i := 0; i < 999; i++ {
+		select {
+		case <-fin:
+			continue
+		}
+	}
+
+	if list.Len != 1000 {
+		t.Error("list.len != 10", list.Len)
 	}
 }
