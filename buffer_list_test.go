@@ -2,6 +2,7 @@ package buffer_list
 
 import (
 	"testing"
+	"time"
 )
 
 type TestData struct {
@@ -69,5 +70,24 @@ func TestBufferListCreate10(t *testing.T) {
 
 	if data.b != 88 {
 		t.Error("data.b != 88", data.b)
+	}
+}
+
+func TestBufferListConcurrentCreate10(t *testing.T) {
+
+	list := createList()
+	for i := 1; i < 10; i++ {
+		go func(list *List, i int) {
+			ee := list.InsertNewElem(list.Back())
+			tdata := (*TestData)(ee.Value())
+			tdata.a = int64(i) * 1
+			tdata.b = int32(i) * 11
+		}(list, i)
+	}
+
+	time.Sleep(time.Second)
+
+	if list.Len != 10 {
+		t.Error("list.len != 10")
 	}
 }
