@@ -6,6 +6,7 @@ package buffer_list
 
 import (
 	"reflect"
+	"sync"
 	"unsafe"
 )
 
@@ -30,11 +31,12 @@ type List struct {
 	elms      []byte
 	datas     []byte
 	Len       int
+	m         sync.Mutex
 }
 
-func New(first_value interface{}) *List {
+func New(first_value interface{}, buf_cnt int) *List {
 	l := new(List)
-	l.Init(first_value)
+	l.Init(first_value, buf_cnt)
 	return l
 	//	return new(List).Init(value_struct)
 }
@@ -68,6 +70,10 @@ func (e *Element) Value() unsafe.Pointer {
 }
 
 func (e *Element) Free() {
+
+	e.list.m.Lock()
+	defer e.list.m.Unlock()
+
 	at := e.prev
 	n := e.next
 	at.next = n
@@ -90,13 +96,15 @@ func (e *Element) Free() {
 func (l *List) InsertNewElem(at *Element) *Element {
 	var e *Element
 
+	l.m.Lock()
+	defer l.m.Unlock()
+
 	if l != at.list {
 		return nil
 	}
 
 	if l.Freed == nil {
 		e = l.getElemData(l.Used_idx)
-
 		l.Used_idx += 1
 	} else {
 		e = l.Freed
@@ -121,16 +129,23 @@ func (l *List) InsertNewElem(at *Element) *Element {
 	return e
 }
 
-func (l *List) Init(first_value interface{}) *List {
+func (l *List) Init(first_value interface{}, value_len int) *List {
+	l.m.Lock()
+	defer l.m.Unlock()
 	if l.Used == nil {
+		var buf_len int64
+		if value_len < 1024 {
+			buf_len = int64(DEFAULT_BUF_SIZE)
+		} else {
+			buf_len = int64(value_len)
+		}
 		l.Value_inf = first_value
 		l.SizeData = int64(reflect.TypeOf(first_value).Size())
 		l.SizeElm = int64(reflect.TypeOf(Element{}).Size())
-		l.elms = make([]byte, DEFAULT_BUF_SIZE*l.SizeElm,
-			DEFAULT_BUF_SIZE*l.SizeElm)
-		l.datas = make([]byte, DEFAULT_BUF_SIZE*l.SizeData,
-			DEFAULT_BUF_SIZE*l.SizeData)
-
+		l.elms = make([]byte, buf_len*l.SizeElm,
+			buf_len*l.SizeElm)
+		l.datas = make([]byte, buf_len*l.SizeData,
+			buf_len*l.SizeData)
 		elm := (*Element)(unsafe.Pointer(&l.elms[0]))
 		elm.value = unsafe.Pointer(&l.datas[0])
 		elm.prev = elm
