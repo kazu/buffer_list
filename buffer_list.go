@@ -49,6 +49,7 @@ type List struct {
 	datas     []byte
 	Len       int
 	m         sync.Mutex
+	cast_f    func(unsafe.Pointer) interface{}
 }
 
 func New(first_value interface{}, buf_cnt int) *List {
@@ -190,4 +191,11 @@ func (l *List) Inf() interface{} {
 
 func (l *List) Value() unsafe.Pointer {
 	return l.Used.value
+}
+func (l *List) SetCastFunc(f func(val unsafe.Pointer) interface{}) {
+	l.cast_f = f
+}
+
+func (e *Element) ValueWithCast() interface{} {
+	return e.list.cast_f(e.Value())
 }
