@@ -94,12 +94,18 @@ func (e *Element) Free() {
 
 	at := e.prev
 	n := e.next
-	at.next = n
+	if at.next == e {
+		at.next = n
+	}
 	if n != nil {
 		n.prev = at
 	}
 
 	e.list.Len -= 1
+
+	if e.list.Used == e {
+		e.list.Used = n
+	}
 	// move to free buffer
 	if e.list.Freed == nil {
 		e.prev = nil
@@ -215,7 +221,11 @@ func (l *List) Front() *Element {
 }
 
 func (l *List) Back() *Element {
-	return l.Used.prev
+	if l.Used == nil {
+		return nil
+	} else {
+		return l.Used.prev
+	}
 }
 
 func (l *List) Inf() interface{} {
