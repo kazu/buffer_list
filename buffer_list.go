@@ -95,7 +95,9 @@ func (e *Element) Free() {
 	at := e.prev
 	n := e.next
 	at.next = n
-	n.prev = at
+	if n != nil {
+		n.prev = at
+	}
 
 	e.list.Len -= 1
 	// move to free buffer
@@ -111,8 +113,39 @@ func (e *Element) Free() {
 		e.list.Freed = e
 	}
 }
+func (l *List) newFirstElem() *Element {
+	var e *Element
+
+	l.m.Lock()
+	defer l.m.Unlock()
+
+	if l.Freed == nil {
+		e = l.getElemData(l.Used_idx)
+		l.Used_idx += 1
+	} else {
+		e = l.Freed
+		if l.Freed.next == nil {
+			l.Freed = nil
+		} else {
+			l.Freed = l.Freed.next
+		}
+	}
+	e.prev = e
+	e.next = nil
+	e.list = l
+	if l.Used == nil {
+		l.Used = e
+	}
+	l.Len++
+	return e
+}
+
 func (l *List) InsertNewElem(at *Element) *Element {
 	var e *Element
+
+	if l.Len == 0 && at == nil {
+		return l.newFirstElem()
+	}
 
 	l.m.Lock()
 	defer l.m.Unlock()
