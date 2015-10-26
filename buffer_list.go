@@ -196,6 +196,10 @@ func (l *List) SetCastFunc(f func(val unsafe.Pointer) interface{}) {
 	l.cast_f = f
 }
 
+func (e *Element) List() *List {
+	return e.list
+}
+
 func (e *Element) ValueWithCast() interface{} {
 	return e.list.cast_f(e.Value())
 }
