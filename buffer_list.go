@@ -134,6 +134,7 @@ func (l *List) newFirstElem() *Element {
 			l.Freed = nil
 		} else {
 			l.Freed = l.Freed.next
+			l.Freed.prev = nil
 		}
 	}
 	e.prev = e
@@ -165,10 +166,13 @@ func (l *List) InsertNewElem(at *Element) *Element {
 		l.Used_idx += 1
 	} else {
 		e = l.Freed
+		e.prev = nil
+		e.next = nil
 		if l.Freed.next == nil {
 			l.Freed = nil
 		} else {
 			l.Freed = l.Freed.next
+			l.Freed.prev = nil
 		}
 	}
 	e.list = l
