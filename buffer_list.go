@@ -22,6 +22,7 @@
 package buffer_list
 
 import (
+	//	"fmt" // FIXME remove
 	"reflect"
 	"sync"
 	"unsafe"
@@ -98,11 +99,11 @@ func (e *Element) Free() {
 		}
 	}
 
-	fmt.Println("dont Free() e is not used ")
+	//	fmt.Println("dont Free() e is not used ")
 	return
 
 DO_FREE:
-	fmt.Println("do Free()")
+	//	fmt.Println("do Free()")
 
 	at := e.prev
 	n := e.next
