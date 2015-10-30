@@ -92,6 +92,18 @@ func (e *Element) Free() {
 	e.list.m.Lock()
 	defer e.list.m.Unlock()
 
+	for ee := e.list.Used; ee != nil; ee = ee.next {
+		if e == ee {
+			goto DO_FREE
+		}
+	}
+
+	fmt.Println("dont Free() e is not used ")
+	return
+
+DO_FREE:
+	fmt.Println("do Free()")
+
 	at := e.prev
 	n := e.next
 	if at.next == e {
