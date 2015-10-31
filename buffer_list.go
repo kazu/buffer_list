@@ -33,10 +33,11 @@ const (
 )
 
 type Element struct {
-	list  *List
-	next  *Element
-	prev  *Element
-	value unsafe.Pointer
+	list      *List
+	next      *Element
+	prev      *Element
+	old_value unsafe.Pointer
+	value     interface{}
 }
 
 type List struct {
