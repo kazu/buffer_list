@@ -12,7 +12,7 @@ type TestData struct {
 
 func createList() *List {
 	list := New(TestData{}, 4096)
-	data := (*TestData)(list.Front().Value())
+	data := list.Front().Value().(*TestData)
 	data.a = 1
 	data.b = 11
 
@@ -33,7 +33,7 @@ func TestBufferListInsertNewElem(t *testing.T) {
 	list := createList()
 
 	e := list.InsertNewElem(list.Front())
-	data := (*TestData)(e.Value())
+	data := e.Value().(*TestData)
 
 	data.a = 2
 	data.b = 22
@@ -42,7 +42,7 @@ func TestBufferListInsertNewElem(t *testing.T) {
 		t.Error("list.Len != 2")
 	}
 
-	data2 := (*TestData)(list.Back().Value())
+	data2 := list.Back().Value().(*TestData)
 
 	if data2.a != 2 {
 		t.Error("data2.a != 2")
@@ -56,7 +56,7 @@ func TestBufferListCreate1000(t *testing.T) {
 	var e *Element
 	for i := 1; i < 1000; i++ {
 		e = list.InsertNewElem(list.Back())
-		data = (*TestData)(e.Value())
+		data = e.Value().(*TestData)
 		data.a = int64(i) * 1
 		data.b = int32(i) * 11
 	}
@@ -65,7 +65,7 @@ func TestBufferListCreate1000(t *testing.T) {
 		t.Error("list.len != 10")
 	}
 
-	data = (*TestData)(list.Back().Prev().Value())
+	data = list.Back().Prev().Value().(*TestData)
 
 	if data.b != 998*11 {
 		t.Error("data.b != 998*11", data.b)
@@ -79,7 +79,7 @@ func TestBufferListConcurrentCreate1000(t *testing.T) {
 
 	c_elm := func(list *List, i int, fin chan bool) {
 		ee := list.InsertNewElem(list.Back())
-		tdata := (*TestData)(ee.Value())
+		tdata := ee.Value().(*TestData)
 		tdata.a = int64(i) * 1
 		tdata.b = int32(i) * 11
 		fin <- true
