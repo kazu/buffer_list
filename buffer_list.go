@@ -69,6 +69,9 @@ func (l *List) GetElement() *Element {
 	return l.Used
 }
 func (e *Element) Next() *Element {
+	e.list.m.Lock()
+	defer e.list.m.Unlock()
+
 	if e.next != nil {
 		return e.next
 	} else {
@@ -77,6 +80,9 @@ func (e *Element) Next() *Element {
 }
 
 func (e *Element) Prev() *Element {
+	e.list.m.Lock()
+	defer e.list.m.Unlock()
+
 	if e.prev != nil {
 		return e.prev
 	} else {
@@ -234,10 +240,16 @@ func (l *List) Init(first_value interface{}, value_len int) *List {
 }
 
 func (l *List) Front() *Element {
+	l.m.Lock()
+	defer l.m.Unlock()
+
 	return l.Used
 }
 
 func (l *List) Back() *Element {
+	l.m.Lock()
+	defer l.m.Unlock()
+
 	if l.Used == nil {
 		return nil
 	} else {
