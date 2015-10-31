@@ -33,10 +33,11 @@ const (
 )
 
 type Element struct {
-	list  *List
-	next  *Element
-	prev  *Element
-	value unsafe.Pointer
+	list      *List
+	next      *Element
+	prev      *Element
+	old_value unsafe.Pointer
+	value     interface{}
 }
 
 type List struct {
@@ -50,7 +51,7 @@ type List struct {
 	datas     []byte
 	Len       int
 	m         sync.Mutex
-	cast_f    func(unsafe.Pointer) interface{}
+	cast_f    func(interface{}) interface{}
 }
 
 func New(first_value interface{}, buf_cnt int) *List {
@@ -62,7 +63,7 @@ func New(first_value interface{}, buf_cnt int) *List {
 
 func (l *List) getElemData(idx int64) *Element {
 	elm := (*Element)(unsafe.Pointer(&l.elms[int(l.SizeElm)*int(idx)]))
-	elm.value = unsafe.Pointer(&l.datas[int(l.SizeData)*int(idx)])
+	elm.value = reflect.NewAt(l.TypeOfValue_inf(), unsafe.Pointer(&l.datas[int(l.SizeData)*int(idx)])).Interface()
 	return elm
 }
 func (l *List) GetElement() *Element {
@@ -90,7 +91,7 @@ func (e *Element) Prev() *Element {
 	}
 }
 
-func (e *Element) Value() unsafe.Pointer {
+func (e *Element) Value() interface{} {
 	return e.value
 }
 
@@ -209,6 +210,14 @@ func (l *List) InsertNewElem(at *Element) *Element {
 	return e
 }
 
+func (l *List) TypeOfValue_inf() reflect.Type {
+	if reflect.TypeOf(l.Value_inf).Kind() == reflect.Ptr {
+		return reflect.ValueOf(l.Value_inf).Elem().Type()
+	} else {
+		return reflect.TypeOf(l.Value_inf)
+	}
+}
+
 func (l *List) Init(first_value interface{}, value_len int) *List {
 	l.m.Lock()
 	defer l.m.Unlock()
@@ -220,14 +229,14 @@ func (l *List) Init(first_value interface{}, value_len int) *List {
 			buf_len = int64(value_len)
 		}
 		l.Value_inf = first_value
-		l.SizeData = int64(reflect.TypeOf(first_value).Size())
+		l.SizeData = int64(l.TypeOfValue_inf().Size())
 		l.SizeElm = int64(reflect.TypeOf(Element{}).Size())
 		l.elms = make([]byte, buf_len*l.SizeElm,
 			buf_len*l.SizeElm)
 		l.datas = make([]byte, buf_len*l.SizeData,
 			buf_len*l.SizeData)
 		elm := (*Element)(unsafe.Pointer(&l.elms[0]))
-		elm.value = unsafe.Pointer(&l.datas[0])
+		elm.value = reflect.NewAt(l.TypeOfValue_inf(), unsafe.Pointer(&l.datas[0])).Interface()
 		elm.prev = elm
 		elm.next = nil
 		elm.list = l
@@ -261,10 +270,10 @@ func (l *List) Inf() interface{} {
 	return l.Value_inf
 }
 
-func (l *List) Value() unsafe.Pointer {
+func (l *List) Value() interface{} {
 	return l.Used.value
 }
-func (l *List) SetCastFunc(f func(val unsafe.Pointer) interface{}) {
+func (l *List) SetCastFunc(f func(val interface{}) interface{}) {
 	l.cast_f = f
 }
 
