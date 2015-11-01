@@ -58,6 +58,9 @@ func New(first_value interface{}, buf_cnt int) *List {
 	return new(List).Init(first_value, buf_cnt)
 }
 
+func (l *List) GetDataPtr() uintptr {
+	return uintptr(unsafe.Pointer(&l.datas[0]))
+}
 func (l *List) getElemData(idx int64) *Element {
 	elm := (*Element)(unsafe.Pointer(&l.elms[int(l.SizeElm)*int(idx)]))
 	elm.value = reflect.NewAt(l.TypeOfValue_inf(), unsafe.Pointer(&l.datas[int(l.SizeData)*int(idx)])).Interface()
