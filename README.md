@@ -9,18 +9,15 @@ type Hoge struct {
 }
 
 buffer_list := buffer_list.New(&Hoge{}, 100)
-buffer_list.SetCastFunc(func(p interface{}) interface{} {
-  return (*Hoge)(p)
-}
 
-hoge := buffer_list.ValueWithCast()
+hoge := buffer_list.Value().(*Hoge)
 hoge.a = 200
 hoge.b = 500
 
 
 cur := blist.GetElement()
 new_e := blist.InsertNewElem(cur)
-hoge2 := new_e.ValueWithCast
+hoge2 := new_e.Value().(*Hoge)
 hoge2.a = 222
 hoge2.b = 2222
 

@@ -10,7 +10,7 @@
 //			b int
 //		}
 //		l := buffer_list.New(Hoge{})
-//		hoge := (*Hoge)(l.GetElement(),Value())
+//		hoge := l.GetElement(),Value().(*Hoge)
 //		hoge.a = 1
 //		hoge.b = 2
 // To iterate over a list
@@ -55,10 +55,7 @@ type List struct {
 }
 
 func New(first_value interface{}, buf_cnt int) *List {
-	l := new(List)
-	l.Init(first_value, buf_cnt)
-	return l
-	//	return new(List).Init(value_struct)
+	return new(List).Init(first_value, buf_cnt)
 }
 
 func (l *List) getElemData(idx int64) *Element {
@@ -138,6 +135,19 @@ DO_FREE:
 		f_at.prev = e
 		e.list.Freed = e
 	}
+}
+
+func (e *Element) InitValue() {
+
+	diff := uint64(reflect.ValueOf(e.value).Pointer()) - uint64(uintptr(unsafe.Pointer(&e.list.datas[0])))
+	idx := int(diff / uint64(e.list.SizeData))
+
+	for i := range e.list.datas[idx : idx+int(e.list.SizeData)] {
+		e.list.datas[idx+i] = 0
+	}
+
+	return
+	//	fmt.Println(ref_byte, databyte)
 }
 func (l *List) newFirstElem() *Element {
 	var e *Element
