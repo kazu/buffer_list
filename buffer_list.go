@@ -142,11 +142,10 @@ DO_FREE:
 
 func (e *Element) InitValue() {
 
-	diff := uint64(reflect.ValueOf(e.value).Pointer()) - uint64(uintptr(unsafe.Pointer(&e.list.datas[0])))
-	idx := int(diff / uint64(e.list.SizeData))
+	diff := int(uint64(reflect.ValueOf(e.value).Pointer()) - uint64(uintptr(unsafe.Pointer(&e.list.datas[0]))))
 
-	for i := range e.list.datas[idx : idx+int(e.list.SizeData)] {
-		e.list.datas[idx+i] = 0
+	for i := range e.list.datas[diff : diff+int(e.list.SizeData)-1] {
+		e.list.datas[diff+i] = 0
 	}
 
 	return
