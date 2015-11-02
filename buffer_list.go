@@ -155,8 +155,8 @@ func (e *Element) InitValue() {
 func (l *List) newFirstElem() *Element {
 	var e *Element
 
-	l.m.Lock()
-	defer l.m.Unlock()
+	//	l.m.Lock()
+	//	defer l.m.Unlock()
 
 	if l.Freed == nil {
 		e = l.getElemData(l.Used_idx)
@@ -183,12 +183,12 @@ func (l *List) newFirstElem() *Element {
 func (l *List) InsertNewElem(at *Element) *Element {
 	var e *Element
 
+	l.m.Lock()
+	defer l.m.Unlock()
+
 	if l.Len == 0 && at == nil {
 		return l.newFirstElem()
 	}
-
-	l.m.Lock()
-	defer l.m.Unlock()
 
 	if l != at.list {
 		return nil
