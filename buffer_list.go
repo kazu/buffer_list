@@ -22,7 +22,7 @@
 package buffer_list
 
 import (
-	//	"fmt" // FIXME remove
+	"fmt" // FIXME remove
 	"reflect"
 	"sync"
 	"unsafe"
@@ -65,6 +65,24 @@ func (e *Element) Commit() {
 	e.List().Pick_ptr(e)
 }
 
+func (e *Element) free_pick_ptr() {
+	l := e.list
+	f_num := reflect.ValueOf(e.Value()).Elem().NumField()
+	v_ptr := reflect.ValueOf(e.Value()).Pointer()
+
+	if l.pointers[uintptr(v_ptr)] == nil {
+		return
+	}
+
+	for i := 0; i < f_num; i++ {
+		if l.pointers[uintptr(v_ptr)][i] != nil {
+			fmt.Println("free value.member", i, l.pointers[uintptr(v_ptr)][i])
+
+			delete(l.pointers[uintptr(v_ptr)], i)
+		}
+	}
+}
+
 func (l *List) Pick_ptr(e *Element) {
 	f_num := reflect.ValueOf(e.Value()).Elem().NumField()
 	v_ptr := reflect.ValueOf(e.Value()).Pointer()
@@ -90,7 +108,7 @@ func (l *List) Pick_ptr(e *Element) {
 		case reflect.Func:
 			fallthrough
 		case reflect.Ptr:
-			//			fmt.Println("detect ptr member", i, m.Kind(), m.Pointer())
+			fmt.Println("detect ptr member", i, m.Kind(), m.Pointer())
 			l.pointers[uintptr(v_ptr)][i] = unsafe.Pointer(m.Pointer())
 		default:
 		}
@@ -178,9 +196,12 @@ DO_FREE:
 		f_at.prev = e
 		e.list.Freed = e
 	}
+	e.free_pick_ptr()
 }
 
 func (e *Element) InitValue() {
+
+	e.free_pick_ptr()
 
 	diff := int(uint64(reflect.ValueOf(e.value).Pointer()) - uint64(uintptr(unsafe.Pointer(&e.list.datas[0]))))
 
