@@ -52,10 +52,50 @@ type List struct {
 	Len       int
 	m         sync.Mutex
 	cast_f    func(interface{}) interface{}
+	pointers  map[uintptr]map[int]unsafe.Pointer
 }
 
-func New(first_value interface{}, buf_cnt int) *List {
-	return new(List).Init(first_value, buf_cnt)
+func New(first_value interface{}, buf_cnt int) (l *List) {
+	l = new(List).Init(first_value, buf_cnt)
+	l.pointers = make(map[uintptr]map[int]unsafe.Pointer)
+	return l
+}
+
+func (e *Element) Commit() {
+	e.List().Pick_ptr(e)
+}
+
+func (l *List) Pick_ptr(e *Element) {
+	f_num := reflect.ValueOf(e.Value()).Elem().NumField()
+	v_ptr := reflect.ValueOf(e.Value()).Pointer()
+	if l.pointers[uintptr(v_ptr)] == nil {
+		l.pointers[uintptr(v_ptr)] = make(map[int]unsafe.Pointer)
+	}
+
+	for i := 0; i < f_num; i++ {
+		m := reflect.ValueOf(e.Value()).Elem().Field(i)
+		switch m.Kind() {
+		case reflect.UnsafePointer:
+			fallthrough
+		case reflect.String:
+			fallthrough
+		case reflect.Slice:
+			fallthrough
+		case reflect.Map:
+			fallthrough
+		case reflect.Chan:
+			fallthrough
+		case reflect.Array:
+			fallthrough
+		case reflect.Func:
+			fallthrough
+		case reflect.Ptr:
+			//			fmt.Println("detect ptr member", i, m.Kind(), m.Pointer())
+			l.pointers[uintptr(v_ptr)][i] = unsafe.Pointer(m.Pointer())
+		default:
+		}
+
+	}
 }
 
 func (l *List) GetDataPtr() uintptr {
