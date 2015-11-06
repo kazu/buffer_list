@@ -22,7 +22,7 @@
 package buffer_list
 
 import (
-	"fmt" // FIXME remove
+	//	"fmt" // FIXME remove
 	"reflect"
 	"sync"
 	"unsafe"
@@ -76,7 +76,7 @@ func (e *Element) free_pick_ptr() {
 
 	for i := 0; i < f_num; i++ {
 		if l.pointers[uintptr(v_ptr)][i] != nil {
-			fmt.Println("free value.member", i, l.pointers[uintptr(v_ptr)][i])
+			//			fmt.Println("free value.member", i, l.pointers[uintptr(v_ptr)][i])
 
 			delete(l.pointers[uintptr(v_ptr)], i)
 		}
@@ -108,7 +108,7 @@ func (l *List) Pick_ptr(e *Element) {
 		case reflect.Func:
 			fallthrough
 		case reflect.Ptr:
-			fmt.Println("detect ptr member", i, m.Kind(), m.Pointer())
+			//			fmt.Println("detect ptr member", i, m.Kind(), m.Pointer())
 			l.pointers[uintptr(v_ptr)][i] = unsafe.Pointer(m.Pointer())
 		default:
 		}
