@@ -22,7 +22,7 @@
 package buffer_list
 
 import (
-	//	"fmt" // FIXME remove
+	"fmt" // FIXME remove
 	"reflect"
 	"sync"
 	"unsafe"
@@ -63,6 +63,27 @@ func New(first_value interface{}, buf_cnt int) (l *List) {
 
 func (e *Element) Commit() {
 	e.List().Pick_ptr(e)
+}
+func (e *Element) DumpPicks() string {
+	v_ptr := reflect.ValueOf(e.Value()).Pointer()
+	return fmt.Sprintf("%#v", e.list.pointers[uintptr(v_ptr)])
+}
+func (e *Element) IsPicked(i interface{}) bool {
+	f_num := reflect.ValueOf(e.Value()).Elem().NumField()
+	v_ptr := reflect.ValueOf(e.Value()).Pointer()
+	f_ptr := unsafe.Pointer(reflect.ValueOf(i).Pointer())
+
+	l := e.list
+
+	if l.pointers[uintptr(v_ptr)] == nil {
+		return false
+	}
+	for i := 0; i < f_num; i++ {
+		if l.pointers[uintptr(v_ptr)][i] == f_ptr {
+			return true
+		}
+	}
+	return false
 }
 
 func (e *Element) free_pick_ptr() {
@@ -108,8 +129,11 @@ func (l *List) Pick_ptr(e *Element) {
 		case reflect.Func:
 			fallthrough
 		case reflect.Ptr:
-			//			fmt.Println("detect ptr member", i, m.Kind(), m.Pointer())
 			l.pointers[uintptr(v_ptr)][i] = unsafe.Pointer(m.Pointer())
+		case reflect.Interface:
+			if m.Elem().Kind() == reflect.Ptr {
+				l.pointers[uintptr(v_ptr)][i] = unsafe.Pointer(m.Elem().Pointer())
+			}
 		default:
 		}
 
