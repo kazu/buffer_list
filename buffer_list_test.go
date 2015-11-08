@@ -2,11 +2,13 @@ package buffer_list
 
 import (
 	"fmt"
+	"reflect"
 	"runtime"
 	"testing"
 )
 
 var g_t *testing.T = nil
+var enable_gc_check bool = true
 
 type TestData struct {
 	a int64
@@ -17,6 +19,11 @@ type TestData struct {
 type TestDataPtr struct {
 	a int
 	b *TestData
+}
+
+type TestNestData struct {
+	a int
+	b TestDataPtr
 }
 
 func createList() *List {
@@ -120,7 +127,16 @@ func createData(l *List, f func(*Element, int)) {
 }
 
 func on_gc(d *TestData) {
-	g_t.Error(fmt.Sprintf("Error direct %p", d))
+	if enable_gc_check {
+		g_t.Error("Error direct ")
+
+	}
+}
+
+func on_gc2(d *TestData) {
+	if enable_gc_check {
+		g_t.Error(fmt.Sprintf("Error nested %p ", g_t))
+	}
 }
 
 func TestProtectFreePtr(t *testing.T) {
@@ -135,7 +151,41 @@ func TestProtectFreePtr(t *testing.T) {
 		runtime.SetFinalizer(v.b, on_gc)
 	})
 	runtime.GC()
-	if g_t == nil { // avoid to free tlist
-		fmt.Println(tlist.Front().Value().(*TestDataPtr))
+	//cnt := 0
+
+	for e := tlist.Front(); e != nil; e = e.Next() {
+		v := e.Value().(*TestDataPtr)
+		runtime.SetFinalizer(v.b, nil)
+		if !reflect.ValueOf(v.b).IsValid() {
+			t.Error("FreePtr: data is freed")
+		}
+
+	}
+}
+
+func TestProtectFreeNestPtr(t *testing.T) {
+	g_t = t
+
+	tlist := New(TestNestData{}, 50000)
+
+	createData(tlist, func(e *Element, i int) {
+		v := e.Value().(*TestNestData)
+		v.a = i
+		v.b = TestDataPtr{a: i, b: &TestData{a: int64(i + 1)}}
+		runtime.SetFinalizer(v.b.b, on_gc)
+		e.Commit()
+	})
+	//	fmt.Println(tlist.Front().DumpPicks())
+
+	runtime.GC()
+
+	for e := tlist.Front(); e != nil; e = e.Next() {
+		v := e.Value().(*TestNestData)
+
+		runtime.SetFinalizer(v.b.b, nil)
+
+		if !reflect.ValueOf(v.b.b).IsValid() {
+			t.Error("FreeNestPtr: data is freed")
+		}
 	}
 }
