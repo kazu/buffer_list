@@ -19,12 +19,12 @@ hoge.a = 200
 hoge.b = 500
 
 
-new_e := blist.InsertLast()
+new_e := blist.InsertLast() // allocate new element/value
 hoge2 := new_e.Value().(*Hoge)
 hoge2.a = 222
 hoge2.b = 2222
 hoge2.c = 1234
-new_e.Commit() // protect c from gc Free
+new_e.Commit() // protect from gc Free
 
 for e:= blist.Front(); e != nil; e.Next() {
   fmt.Println("value", e.Value() )
