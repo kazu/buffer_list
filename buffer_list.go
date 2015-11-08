@@ -263,7 +263,7 @@ func (l *List) newFirstElem() *Element {
 	l.Len++
 	return e
 }
-func (l *list) InsertLast() *Element {
+func (l *List) InsertLast() *Element {
 	return l.InsertNewElem(l.Back())
 }
 
