@@ -1,13 +1,22 @@
 package buffer_list
 
 import (
+	"fmt"
+	"runtime"
 	"testing"
 )
+
+var g_t *testing.T = nil
 
 type TestData struct {
 	a int64
 	b int32
 	c int64
+}
+
+type TestDataPtr struct {
+	a int
+	b *TestData
 }
 
 func createList() *List {
@@ -98,5 +107,35 @@ func TestBufferListConcurrentCreate1000(t *testing.T) {
 
 	if list.Len != 1000 {
 		t.Error("list.len != 10", list.Len)
+	}
+}
+
+func createData(l *List, f func(*Element, int)) {
+	l.Back().Free()
+	for i := 0; i < l.Cap()/2; i++ {
+		e := l.InsertNewElem(l.Back())
+		e.InitValue()
+		f(e, i)
+	}
+}
+
+func on_gc(d *TestData) {
+	g_t.Error(fmt.Sprintf("Error direct %p", d))
+}
+
+func TestProtectFreePtr(t *testing.T) {
+	g_t = t
+	tlist := New(TestDataPtr{}, 50000)
+
+	createData(tlist, func(e *Element, i int) {
+		v := e.Value().(*TestDataPtr)
+		v.a = i
+		v.b = &TestData{a: int64(i)}
+		e.Commit()
+		runtime.SetFinalizer(v.b, on_gc)
+	})
+	runtime.GC()
+	if g_t == nil { // avoid to free tlist
+		fmt.Println(tlist.Front().Value().(*TestDataPtr))
 	}
 }

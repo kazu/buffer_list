@@ -314,6 +314,9 @@ func (l *List) TypeOfValue_inf() reflect.Type {
 		return reflect.TypeOf(l.Value_inf)
 	}
 }
+func (l *List) Cap() int {
+	return len(l.elms) / int(l.SizeElm)
+}
 
 func (l *List) Init(first_value interface{}, value_len int) *List {
 	l.m.Lock()
