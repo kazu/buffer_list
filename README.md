@@ -2,7 +2,7 @@
 go Package  double linked list with (slice like) sequencial buffer
 
 
-# WARNING
+## WARNING
 Element.Value() is protected by GC Free in common case.
 but following case is not protected
 
@@ -38,7 +38,7 @@ e.Commit()
 ```
 
 
-# example
+## example
 ```go
 type Hoge struct {
   a int64
