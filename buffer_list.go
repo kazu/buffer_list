@@ -60,7 +60,7 @@ type List struct {
 	m           sync.Mutex
 	cast_f      func(interface{}) interface{}
 	pointers    map[uintptr]map[int]unsafe.Pointer // [elem addr][field num][pointer]
-	nested_ptrs map[interface{}]interface{}
+	nested_ptrs map[uintptr]interface{}
 }
 
 func New(first_value interface{}, buf_cnt int) (l *List) {
@@ -74,7 +74,7 @@ func (e *Element) Commit() {
 }
 func (e *Element) DumpPicks() string {
 	v_ptr := reflect.ValueOf(e.Value()).Pointer()
-	return fmt.Sprintf("%#v", e.list.pointers[uintptr(v_ptr)])
+	return fmt.Sprintf("ptrs=%#v nested_ptrs=%#v", e.list.pointers[uintptr(v_ptr)], e.list.nested_ptrs[uintptr(v_ptr)])
 }
 func (e *Element) IsPicked(i interface{}) bool {
 	f_num := reflect.ValueOf(e.Value()).Elem().NumField()
@@ -112,9 +112,10 @@ func (e *Element) free_pick_ptr() {
 	}
 }
 
-func search_nested_struct_ptr(r reflect.Value, m map[interface{}]interface{}) {
-	fmt.Println("search_nested_struct_ptr", r, m)
+func search_nested_struct_ptr(r reflect.Value) map[interface{}]interface{} {
+	//fmt.Println("search_nested_struct_ptr", r)
 	f_num := r.NumField()
+	m := map[interface{}]interface{}{}
 	for i := 0; i < f_num; i++ {
 		v := r.Field(i)
 		switch v.Kind() {
@@ -139,12 +140,14 @@ func search_nested_struct_ptr(r reflect.Value, m map[interface{}]interface{}) {
 				m[i] = unsafe.Pointer(v.Elem().Pointer())
 			}
 		case reflect.Struct:
-			if m[i] == nil {
-				m[i] = make(map[interface{}]interface{})
-			}
-			search_nested_struct_ptr(v, m[i].(map[interface{}]interface{}))
+			m[i] = search_nested_struct_ptr(v)
 		default:
 		}
+	}
+	if len(m) == 0 {
+		return nil
+	} else {
+		return m
 	}
 }
 
@@ -180,10 +183,10 @@ func (l *List) Pick_ptr(e *Element) {
 			}
 
 		case reflect.Struct:
-			if l.nested_ptrs[uintptr(v_ptr)] == nil {
-				l.nested_ptrs[uintptr(v_ptr)] = make(map[interface{}]interface{})
+			if l.nested_ptrs == nil {
+				l.nested_ptrs = map[uintptr]interface{}{}
 			}
-			search_nested_struct_ptr(m, l.nested_ptrs[uintptr(v_ptr)].(map[interface{}]interface{}))
+			l.nested_ptrs[uintptr(v_ptr)] = search_nested_struct_ptr(m)
 		default:
 		}
 
