@@ -1,7 +1,7 @@
 // Copyright 2015 Kazuhisa TAKEI<xtakei@me.com>. All rights reserved.
 // Use of this source code is governed by MPL-2.0 license tha can be
 // found in the LICENSE file
-
+//
 // Package buffer_list implements a double linked list with sequencial buffer data.
 //
 // To Get New First Data from buffer_list(l is a *List)
@@ -13,6 +13,13 @@
 //		hoge := l.GetElement(),Value().(*Hoge)
 //		hoge.a = 1
 //		hoge.b = 2
+//
+// To add New Element
+//      e: = l.InsertLatst()
+//      hoge := e.Value().(*Hoge)
+//      hoge.a = 1
+//      e.Commit()
+//
 // To iterate over a list
 //		for e := l.Front(); e != nil ; e = e.Next() {
 //			a := (*Hoge)(e.Value())  // Hoge is Value type
@@ -41,18 +48,19 @@ type Element struct {
 }
 
 type List struct {
-	Used      *Element
-	Freed     *Element
-	SizeElm   int64
-	SizeData  int64
-	Used_idx  int64
-	Value_inf interface{}
-	elms      []byte
-	datas     []byte
-	Len       int
-	m         sync.Mutex
-	cast_f    func(interface{}) interface{}
-	pointers  map[uintptr]map[int]unsafe.Pointer
+	Used        *Element
+	Freed       *Element
+	SizeElm     int64
+	SizeData    int64
+	Used_idx    int64
+	Value_inf   interface{}
+	elms        []byte
+	datas       []byte
+	Len         int
+	m           sync.Mutex
+	cast_f      func(interface{}) interface{}
+	pointers    map[uintptr]map[int]unsafe.Pointer // [elem addr][field num][pointer]
+	nested_ptrs map[interface{}]interface{}
 }
 
 func New(first_value interface{}, buf_cnt int) (l *List) {
@@ -104,6 +112,42 @@ func (e *Element) free_pick_ptr() {
 	}
 }
 
+func search_nested_struct_ptr(r reflect.Value, m map[interface{}]interface{}) {
+	fmt.Println("search_nested_struct_ptr", r, m)
+	f_num := r.NumField()
+	for i := 0; i < f_num; i++ {
+		v := r.Field(i)
+		switch v.Kind() {
+		case reflect.UnsafePointer:
+			fallthrough
+		case reflect.String:
+			fallthrough
+		case reflect.Slice:
+			fallthrough
+		case reflect.Map:
+			fallthrough
+		case reflect.Chan:
+			fallthrough
+		case reflect.Array:
+			fallthrough
+		case reflect.Func:
+			fallthrough
+		case reflect.Ptr:
+			m[i] = unsafe.Pointer(v.Pointer())
+		case reflect.Interface:
+			if v.Elem().Kind() == reflect.Ptr {
+				m[i] = unsafe.Pointer(v.Elem().Pointer())
+			}
+		case reflect.Struct:
+			if m[i] == nil {
+				m[i] = make(map[interface{}]interface{})
+			}
+			search_nested_struct_ptr(v, m[i].(map[interface{}]interface{}))
+		default:
+		}
+	}
+}
+
 func (l *List) Pick_ptr(e *Element) {
 	f_num := reflect.ValueOf(e.Value()).Elem().NumField()
 	v_ptr := reflect.ValueOf(e.Value()).Pointer()
@@ -134,6 +178,12 @@ func (l *List) Pick_ptr(e *Element) {
 			if m.Elem().Kind() == reflect.Ptr {
 				l.pointers[uintptr(v_ptr)][i] = unsafe.Pointer(m.Elem().Pointer())
 			}
+
+		case reflect.Struct:
+			if l.nested_ptrs[uintptr(v_ptr)] == nil {
+				l.nested_ptrs[uintptr(v_ptr)] = make(map[interface{}]interface{})
+			}
+			search_nested_struct_ptr(m, l.nested_ptrs[uintptr(v_ptr)].(map[interface{}]interface{}))
 		default:
 		}
 
