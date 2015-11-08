@@ -23,14 +23,17 @@ type TValue struct {
 }
 
 l := buffer_list.New(&TValue{}, 100)
-e := l.InsertNewElement(l.Back())
+e := l.InsertLast()
 v := e.Value().(*TValue)
-
+e.InitValue()
 
 //v.iv is not protected. it may be freed 
 v.iv = IValue{a: &IData{a: 10, b: 1}}
+
 //v.b is OK
 v.b = &IData{a: i * 10, b: i + 1}
+
+e.Commit()
 
 ```
 
@@ -50,8 +53,7 @@ hoge.a = 200
 hoge.b = 500
 
 
-cur := blist.GetElement()
-new_e := blist.InsertNewElem(cur)
+new_e := blist.InsertLast()
 hoge2 := new_e.Value().(*Hoge)
 hoge2.a = 222
 hoge2.b = 2222

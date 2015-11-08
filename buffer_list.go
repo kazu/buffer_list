@@ -263,6 +263,9 @@ func (l *List) newFirstElem() *Element {
 	l.Len++
 	return e
 }
+func (l *list) InsertLast() *Element {
+	return l.InsertNewElem(l.Back())
+}
 
 func (l *List) InsertNewElem(at *Element) *Element {
 	var e *Element
