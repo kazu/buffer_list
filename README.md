@@ -2,8 +2,47 @@
 go Package  double linked list with (slice like) sequencial buffer
 
 
+
+
+## example
+```go
+type Hoge struct {
+  a int64
+  b int64
+  c *int64
+}
+
+buffer_list := buffer_list.New(&Hoge{}, 100)
+
+hoge := buffer_list.Front().Value().(*Hoge)
+hoge.a = 200
+hoge.b = 500
+
+
+new_e := blist.InsertLast()
+hoge2 := new_e.Value().(*Hoge)
+hoge2.a = 222
+hoge2.b = 2222
+hoge2.c = 1234
+new_e.Commit() // protect c from gc Free
+
+for e:= blist.Front(); e != nil; e.Next() {
+  fmt.Println("value", e.Value() )
+}
+
+```
+
 ## WARNING
-Element.Value() is protected by GC Free in common case.
+this packages buffer is []byte so stored struct with pointer member is commonly free by GC.
+buffer_list implement to protect struct's  pointer member. but nested struct cannot protect 
+currently.( I will fix this problem, later)
+
+if struct member is chan/slice/embedded pointer interface/Array/map/function , protected.
+
+
+following case is protected/un-protected pattern.
+
+Element.Value() is protected from GC Free in common case.
 but following case is not protected
 
 
@@ -38,30 +77,3 @@ e.Commit()
 ```
 
 
-## example
-```go
-type Hoge struct {
-  a int64
-  b int64
-  c *int64
-}
-
-buffer_list := buffer_list.New(&Hoge{}, 100)
-
-hoge := buffer_list.Front().Value().(*Hoge)
-hoge.a = 200
-hoge.b = 500
-
-
-new_e := blist.InsertLast()
-hoge2 := new_e.Value().(*Hoge)
-hoge2.a = 222
-hoge2.b = 2222
-hoge2.c = 1234
-new_e.Commit() // protect c from gc Free
-
-for e:= blist.Front(); e != nil; e.Next() {
-  fmt.Println("value", e.Value() )
-}
-
-```
