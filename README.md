@@ -3,8 +3,7 @@ go Package  double linked list with (slice like) sequencial buffer
 
 
 
-
-## example
+## Usage
 ```go
 type Hoge struct {
   a int64
@@ -33,48 +32,12 @@ for e:= blist.Front(); e != nil; e.Next() {
 ```
 
 ## WARNING
-this packages buffer is []byte so stored struct with pointer member is commonly free by GC.
-buffer_list implement to protect struct's  pointer member. but nested struct cannot protect 
-currently.( I will fix this problem, later)
-
-if struct member is chan/slice/embedded pointer interface/Array/map/function , protected.
+this packages buffer is []byte so pointer member of nested struct is commonly freed by GC.
+buffer_list implement to protect struct's  pointer member. but this problem is not fully fixed.
 
 
-following case is protected/un-protected pattern.
+if struct member is chan/slice/embedded pointer interface/Array/map/function/struct , protected.
 
-Element.Value() is protected from GC Free in common case.
-but following case is not protected
-
-
-```gp
-type IData struct {
-        a int
-        b int
-}
-
-type IValue struct {
-        a *IData
-}
-type TValue struct {
-        a  int
-        iv IValue
-        b  *IData
-}
-
-l := buffer_list.New(&TValue{}, 100)
-e := l.InsertLast()
-v := e.Value().(*TValue)
-e.InitValue()
-
-//v.iv is not protected. it may be freed 
-v.iv = IValue{a: &IData{a: 10, b: 1}}
-
-//v.b is OK
-v.b = &IData{a: i * 10, b: i + 1}
-
-e.Commit()
-
-```
 
 ## Contributing
 
