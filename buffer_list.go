@@ -99,9 +99,11 @@ func (e *Element) free_pick_ptr() {
 	f_num := reflect.ValueOf(e.Value()).Elem().NumField()
 	v_ptr := reflect.ValueOf(e.Value()).Pointer()
 
-	if l.pointers[uintptr(v_ptr)] == nil {
+	if l.nested_ptrs[uintptr(v_ptr)] == nil && l.pointers[uintptr(v_ptr)] == nil {
 		return
 	}
+
+	l.nested_ptrs[uintptr(v_ptr)] = nil
 
 	for i := 0; i < f_num; i++ {
 		if l.pointers[uintptr(v_ptr)][i] != nil {
