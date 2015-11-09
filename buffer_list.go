@@ -29,6 +29,7 @@
 package buffer_list
 
 import (
+	"errors"
 	"fmt" // FIXME remove
 	"reflect"
 	"sync"
@@ -430,6 +431,27 @@ func (l *List) Inf() interface{} {
 
 func (l *List) Value() interface{} {
 	return l.Used.value
+}
+func (l *List) ElemByValue(v interface{}) (elm *Element) {
+
+	idx, err := l.get_idx(v)
+	if err != nil {
+		return nil
+	}
+	elm = (*Element)(unsafe.Pointer(&l.elms[int(l.SizeElm)*int(idx)]))
+	return elm
+}
+func (l *List) get_idx(v interface{}) (int64, error) {
+	if v_ref := reflect.ValueOf(v); v_ref.Kind() == reflect.Ptr {
+		v_p := uintptr(v_ref.Pointer())
+		head_p := uintptr(unsafe.Pointer(&l.datas[0]))
+		idx := int64((v_p - head_p) / uintptr(l.SizeData))
+		if idx > l.Used_idx {
+			return 0, errors.New("argument is not overflow. is not freed?")
+		}
+		return idx, nil
+	}
+	return 0, errors.New("argument is not pointer")
 }
 func (l *List) SetCastFunc(f func(val interface{}) interface{}) {
 	l.cast_f = f
