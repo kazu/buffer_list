@@ -148,6 +148,9 @@ func (e *AElement) Free() {
 func (e *AElement) Base() *Element {
 	return e.parent
 }
+func (e *AElement) List() *AList {
+	return e.list
+}
 
 func (l *AList) ElemByValue(v interface{}) *AElement {
 
