@@ -60,6 +60,7 @@ func (al *AList) Push(ae *AElement) bool {
 		al.root.prev = ae
 		ae.next = nil
 	}
+	ae.list = al
 	al.Len++
 	return true
 }
