@@ -216,3 +216,36 @@ func TestProtectFreeNestPtr(t *testing.T) {
 		}
 	}
 }
+
+func TestAList(t *testing.T) {
+	g_t = t
+
+	tlist := New(TestNestData{}, 50000)
+	alist := &AList{parent: tlist}
+	createData(tlist, func(e *Element, i int) {
+		if i%10 == 1 {
+			ae := &AElement{list: alist, parent: e}
+			alist.Push(ae)
+		}
+		v := e.Value().(*TestNestData)
+		v.a = i
+		v.b = TestDataPtr{a: i, b: &TestData{a: int64(i + 1)}}
+		runtime.SetFinalizer(v.b.b, on_gc)
+		e.Commit()
+	})
+
+	if alist.Len > 10000 {
+		t.Error("invalid alist.Len")
+	}
+	cnt := 0
+	for ae := alist.Front(); ae != nil; ae = ae.Next() {
+		v := ae.Value().(*TestNestData)
+		cnt++
+		if !reflect.ValueOf(v.b.b).IsValid() {
+			t.Error("cannot get value via AElement")
+		}
+	}
+	if cnt == 0 {
+		t.Error("not created AElement")
+	}
+}
