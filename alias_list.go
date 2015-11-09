@@ -36,6 +36,11 @@ type AElement struct {
 }
 
 // create new alias element with element
+
+func NewAList(l *List) AList {
+	return AList{parent: l}
+}
+
 func (al *AList) NewElem() (ae *AElement) {
 	ae = &AElement{list: al, parent: al.parent.InsertLast()}
 	return ae
