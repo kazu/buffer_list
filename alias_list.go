@@ -7,7 +7,7 @@
 // implement AList(alias list)
 // example
 //   bl :=  buffer_list.New(Hoge{}, 10000)
-//   alist := Alist{list: bl}
+//   alist := Alist{parent: bl}
 //   ae := alist.NewElem()
 //   alist.Front().Insert(ae)
 //   v := ae.Value().(*Hoge)
