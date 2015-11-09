@@ -1,6 +1,8 @@
 # buffer_list [![wercker status](https://app.wercker.com/status/af71821c3a51e35a170766fdab30e1b8/s "wercker status")](https://app.wercker.com/project/bykey/af71821c3a51e35a170766fdab30e1b8)
-go Package  double linked list with (slice like) sequencial buffer
+Package is double linked list with (slice like) sequencial buffer.
 
+container/list's value is not allocated sequncially. so element value occur fragmentation.
+buffer_list has []byte buffer in List.
 
 
 ## Usage

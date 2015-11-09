@@ -2,6 +2,7 @@ package buffer_list
 
 import (
 	"fmt"
+	"math/rand"
 	"reflect"
 	"runtime"
 	"testing"
@@ -137,6 +138,32 @@ func on_gc2(d *TestData) {
 	if enable_gc_check {
 		g_t.Error(fmt.Sprintf("Error nested %p ", g_t))
 	}
+}
+
+func TestElemByValue(t *testing.T) {
+	tlist := New(TestDataPtr{}, 50000)
+	createData(tlist, func(e *Element, i int) {
+		v := e.Value().(*TestDataPtr)
+		v.a = i
+		v.b = &TestData{a: int64(i)}
+		e.Commit()
+		if e != tlist.ElemByValue(v) {
+			t.Error("cannot get element by value")
+		}
+	})
+	cnt := 0
+	idx := rand.Intn(tlist.Cap() / 2)
+	for e := tlist.Front(); e != nil; e = e.Next() {
+		cnt++
+		if cnt == idx {
+			v := e.Value().(*TestDataPtr)
+			if e != tlist.ElemByValue(v) {
+				t.Error("fail to check element")
+			}
+			break
+		}
+	}
+
 }
 
 func TestProtectFreePtr(t *testing.T) {
