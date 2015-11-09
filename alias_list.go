@@ -24,6 +24,7 @@ type AList struct {
 	parent *List
 	root   *AElement
 	Len    int
+	e2ae   map[*Element]*AElement
 }
 
 // AElement is an element of alias linked list.
@@ -91,10 +92,15 @@ func (at *AElement) Insert(e *AElement) *AElement {
 
 // return value of reel element object
 func (ae *AElement) Value() interface{} {
+	if ae.list.e2ae == nil {
+		ae.list.e2ae = make(map[*Element]*AElement)
+	}
+	ae.list.e2ae[ae.parent] = ae
+
 	return ae.parent.Value()
 }
 func (ae *AElement) InitValue() {
-	return ae.parent.InitValue()
+	ae.parent.InitValue()
 }
 
 // register pointer protect GC
@@ -106,6 +112,8 @@ func (ae *AElement) Commit() {
 func (e *AElement) Remove() bool {
 	e.list.m.Lock()
 	defer e.list.m.Unlock()
+
+	delete(e.list.e2ae, e.parent)
 
 	at := e.prev
 	n := e.next
@@ -135,4 +143,20 @@ func (e *AElement) Free() {
 	e.Remove()
 	e.parent.Free()
 	e.parent = nil
+}
+
+func (e *AElement) Base() *Element {
+	return e.parent
+}
+
+func (l *AList) ElemByValue(v interface{}) *AElement {
+
+	e := l.parent.ElemByValue(v)
+	if e == nil {
+		return nil
+	}
+	if l.e2ae == nil {
+		return nil
+	}
+	return l.e2ae[e]
 }
