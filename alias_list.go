@@ -93,6 +93,9 @@ func (at *AElement) Insert(e *AElement) *AElement {
 func (ae *AElement) Value() interface{} {
 	return ae.parent.Value()
 }
+func (ae *AElement) InitValue() {
+	return ae.parent.InitValue()
+}
 
 // register pointer protect GC
 func (ae *AElement) Commit() {
