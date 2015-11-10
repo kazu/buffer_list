@@ -36,7 +36,7 @@ func Register(l *ListHead, i interface{}) {
 		val_p = val.Addr()
 	}
 	f_p = val_p.Elem().FieldByName("ListHead")
-	diff_type[val_p.Type().Namei()] = false
+	diff_type[val_p.Type().Name()] = false
 	if f_p.Kind() != reflect.Ptr && f_p.CanAddr() {
 		f_p = f_p.Addr()
 		diff_type[val_p.Type().Name()] = true
