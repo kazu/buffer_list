@@ -12,6 +12,13 @@
 //   alist.Front().Insert(ae)
 //   v := ae.Value().(*Hoge)
 //   v.Commit()
+//
+// iteration
+//      for e := range  alist.Generator() {
+//			v := e.Value().(*Hoge)
+//
+//	  }
+//
 
 package buffer_list
 
@@ -47,20 +54,21 @@ func (al *AList) NewElem() (ae *AElement) {
 }
 
 // add element to last of list
-func (al *AList) Push(ae *AElement) bool {
+func (al *AList) Push(e *AElement) bool {
 	al.m.Lock()
 	defer al.m.Unlock()
+	e.prev = e
+	e.next = e
 	if al.root == nil {
-		al.root = ae
-		ae.prev = ae
-		ae.next = nil
-	} else {
-		ae.prev = al.root.prev
-		al.root.prev.next = ae
-		al.root.prev = ae
-		ae.next = nil
+		al.root = e
 	}
-	ae.list = al
+	at := al.root.prev
+	n := at.next
+	at.next = e
+	e.prev = at
+	e.next = n
+	n.prev = e
+	e.list = al
 	al.Len++
 	return true
 }
@@ -72,6 +80,9 @@ func (al *AList) Front() *AElement {
 
 // last element of list
 func (al *AList) Back() *AElement {
+	if al.root == nil {
+		return nil
+	}
 	return al.root.prev
 }
 
@@ -82,16 +93,13 @@ func (at *AElement) Insert(e *AElement) *AElement {
 	l.m.Lock()
 	defer l.m.Unlock()
 
-	e.list = at.list
 	n := at.next
 	at.next = e
 	e.prev = at
-	if n != nil {
-		n.prev = e
-		e.next = n
-	} else {
-		e.list.root.prev = e
-	}
+	e.next = n
+	n.prev = e
+	e.list = at.list
+
 	l.Len++
 	return e
 }
@@ -121,14 +129,13 @@ func (e *AElement) Remove() bool {
 
 	delete(e.list.e2ae, e.parent)
 
-	at := e.prev
-	n := e.next
-	if at.next == e {
-		at.next = n
+	e.prev.next = e.next
+	e.next.prev = e.prev
+	if e.list.root == e {
+		e.list.root = e.next
 	}
-	if n != nil {
-		n.prev = at
-	}
+	e.next = nil
+	e.prev = nil
 	e.list.Len -= 1
 	e.list = nil
 	return true
@@ -168,4 +175,34 @@ func (l *AList) ElemByValue(v interface{}) *AElement {
 		return nil
 	}
 	return l.e2ae[e]
+}
+
+func (l *AList) Generator() chan *AElement {
+	ch_size := l.Len
+
+	if ch_size == 0 {
+		ch_size = 1
+	}
+
+	ch := make(chan *AElement, ch_size)
+
+	go func() {
+		if l == nil {
+			close(ch)
+			return
+		}
+		cnt := 0
+		e := l.Back()
+		for {
+			if e == nil || cnt > ch_size-1 {
+				break
+			}
+			ch <- e
+			e = e.Prev()
+			cnt++
+		}
+		close(ch)
+	}()
+
+	return ch
 }

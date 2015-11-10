@@ -238,7 +238,7 @@ func TestAList(t *testing.T) {
 		t.Error("invalid alist.Len")
 	}
 	cnt := 0
-	for ae := alist.Front(); ae != nil; ae = ae.Next() {
+	for ae := range alist.Generator() {
 		v := ae.Value().(*TestNestData)
 		cnt++
 		if !reflect.ValueOf(v.b.b).IsValid() {
