@@ -25,6 +25,7 @@ func NewListHead(i interface{}) interface{} {
 	list_head := &ListHead{}
 	list_head.Prev = list_head
 	list_head.Next = list_head
+	return nil
 }
 
 func Register(l *ListHead, i interface{}) {
@@ -41,7 +42,7 @@ func Register(l *ListHead, i interface{}) {
 		f_p = f_p.Addr()
 		diff_type[val_p.Type().Name()] = true
 	}
-	diff[val_p] = uintptr(f_p.Pointer() - uintptr(val_p.Pointer()))
+	diff[val_p.Type().Name()] = uintptr(f_p.Pointer() - uintptr(val_p.Pointer()))
 }
 
 // ContainOf(l *ListHead, i interface{}) interface{} {
