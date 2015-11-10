@@ -21,13 +21,6 @@ type ListHead struct {
 	Next *ListHead
 }
 
-func NewListHead() *ListHead {
-	list_head := &ListHead{}
-	list_head.Prev = list_head
-	list_head.Next = list_head
-	return list_head
-}
-
 func NewListHead(i interface{}) interface{} {
 	list_head := &ListHead{}
 	list_head.Prev = list_head
