@@ -5,7 +5,12 @@ container/list's value is not allocated sequncially. so element value occur frag
 buffer_list has []byte buffer in List.
 
 
-## Usage
+## buffer_list.List
+
+buffer_list.List is double linked list with member data buffer.
+if you want to have buffer of list's value, you cant get effect its.
+
+
 ```go
 type Hoge struct {
   a int64
@@ -29,6 +34,26 @@ new_e.Commit() // protect from gc Free
 
 for e:= blist.Front(); e != nil; e.Next() {
   fmt.Println("value", e.Value() )
+}
+
+```
+
+## buffer_list.AList
+
+AList is 'alias list' of buffer_list.List. AList permit you to have multi list with shared buffer data. 
+Alist has Genetator pattern. 
+
+```go
+bl :=  buffer_list.New(Hoge{}, 10000)
+alist := Alist{parent: bl}
+ae := alist.NewElem()
+alist.Front().Insert(ae)
+v := ae.Value().(*Hoge)
+v.Commit()
+
+// iteration
+for e := range alist.Generator() {
+     v := e.Value().(*Hoge)
 }
 
 ```
