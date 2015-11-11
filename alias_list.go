@@ -54,6 +54,10 @@ func (al *AList) NewElem() (ae *AElement) {
 	return ae
 }
 
+func (al *AList) SizeOfParentCache() int {
+	return len(al.e2ae)
+}
+
 // add element to last of list
 func (al *AList) Push(e *AElement) bool {
 
