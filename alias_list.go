@@ -23,6 +23,7 @@
 package buffer_list
 
 import (
+	"fmt"
 	"sync"
 )
 
@@ -55,6 +56,9 @@ func (al *AList) NewElem() (ae *AElement) {
 
 // add element to last of list
 func (al *AList) Push(e *AElement) bool {
+
+	al.detect_empty_record("before_Push()")
+
 	al.m.Lock()
 	defer al.m.Unlock()
 	e.prev = e
@@ -90,6 +94,8 @@ func (al *AList) Back() *AElement {
 func (at *AElement) Insert(e *AElement) *AElement {
 	l := at.list
 
+	l.detect_empty_record("before_Insert()")
+
 	l.m.Lock()
 	defer l.m.Unlock()
 
@@ -121,9 +127,20 @@ func (ae *AElement) InitValue() {
 func (ae *AElement) Commit() {
 	ae.parent.Commit()
 }
+func (l *AList) detect_empty_record(s string) {
+	if l.root == nil {
+		return
+	}
+
+	if l.root.list == nil || l.root.parent == nil || l.root.prev == nil || l.root.next == nil {
+		fmt.Printf("detect invalid on %s al=%+v AList.root=%+v\n", s, l, l.root)
+	}
+
+}
 
 // remove element from alias list
 func (e *AElement) Remove() bool {
+	e.list.detect_empty_record("before_Remove()")
 	e.list.m.Lock()
 	defer e.list.m.Unlock()
 
@@ -131,13 +148,20 @@ func (e *AElement) Remove() bool {
 
 	e.prev.next = e.next
 	e.next.prev = e.prev
+	e.list.Len -= 1
 	if e.list.root == e {
-		e.list.root = e.next
+		if e.list.Len == 0 {
+			e.list.root = nil
+		} else {
+			e.list.root = e.next
+		}
 	}
 	e.next = nil
 	e.prev = nil
-	e.list.Len -= 1
+
+	e.list.detect_empty_record("After_Remove()")
 	e.list = nil
+
 	return true
 }
 
