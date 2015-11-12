@@ -61,10 +61,11 @@ func (al *AList) SizeOfParentCache() int {
 // add element to last of list
 func (al *AList) Push(e *AElement) bool {
 
-	al.detect_empty_record("before_Push()")
-
 	al.m.Lock()
 	defer al.m.Unlock()
+
+	al.detect_empty_record("before_Push()")
+
 	e.prev = e
 	e.next = e
 	if al.root == nil {
@@ -98,10 +99,10 @@ func (al *AList) Back() *AElement {
 func (at *AElement) Insert(e *AElement) *AElement {
 	l := at.list
 
-	l.detect_empty_record("before_Insert()")
-
 	l.m.Lock()
 	defer l.m.Unlock()
+
+	l.detect_empty_record("before_Insert()")
 
 	n := at.next
 	at.next = e
