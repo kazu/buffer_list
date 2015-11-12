@@ -144,9 +144,10 @@ func (l *AList) detect_empty_record(s string) {
 
 // remove element from alias list
 func (e *AElement) Remove() bool {
-	e.list.detect_empty_record("before_Remove()")
 	e.list.m.Lock()
 	defer e.list.m.Unlock()
+
+	e.list.detect_empty_record("before_Remove()")
 
 	delete(e.list.e2ae, e.parent)
 
