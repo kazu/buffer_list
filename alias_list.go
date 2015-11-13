@@ -99,6 +99,11 @@ func (al *AList) Back() *AElement {
 func (at *AElement) Insert(e *AElement) *AElement {
 	l := at.list
 
+	if l == nil {
+		fmt.Printf("e.Insert() fail a.list is nil e=%#v\n", at)
+		return nil
+	}
+
 	l.m.Lock()
 	defer l.m.Unlock()
 
@@ -145,6 +150,11 @@ func (l *AList) detect_empty_record(s string) {
 
 // remove element from alias list
 func (e *AElement) Remove() bool {
+
+	if e.list == nil {
+		fmt.Printf("e.Remove() fail e.list empty e=%#v\n", e)
+		return false
+	}
 	e.list.m.Lock()
 	defer e.list.m.Unlock()
 
