@@ -209,16 +209,16 @@ func (l *AList) ElemByValue(v interface{}) *AElement {
 
 	e := l.parent.ElemByValue(v)
 	if e == nil {
-		fmt.Printf("WARN: ElemByValue() fail get parent elem v=%#v", v)
+		fmt.Printf("WARN: ElemByValue() fail get parent elem v=%#v\n", v)
 		return nil
 	}
 	if l.e2ae == nil {
-		fmt.Printf("WARN: ElemByValue() fail a2ae not exits v=%#v e=%#e", v, e)
+		fmt.Printf("WARN: ElemByValue() fail a2ae not exits v=%#v e=%#e\n", v, e)
 		return nil
 	}
 
 	if l.e2ae[e] == nil {
-		fmt.Printf("WARN: ElemByValue() no entry in l.e2ae[e] v=%#v e=%#v", v, e)
+		fmt.Printf("WARN: ElemByValue() no entry in l.e2ae[e] v=%#v e=%#v\n", v, e)
 	}
 
 	return l.e2ae[e]
