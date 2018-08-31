@@ -125,7 +125,9 @@ func (ae *AElement) Value() interface{} {
 	if ae.list.e2ae == nil {
 		ae.list.e2ae = make(map[*Element]*AElement)
 	}
+  ae.list.m.Lock()
 	ae.list.e2ae[ae.parent] = ae
+  ae.list.m.Unlock()
 
 	return ae.parent.Value()
 }
@@ -213,7 +215,7 @@ func (l *AList) ElemByValue(v interface{}) *AElement {
 		return nil
 	}
 	if l.e2ae == nil {
-		fmt.Printf("WARN: ElemByValue() fail a2ae not exits v=%#v e=%#e\n", v, e)
+		fmt.Printf("WARN: ElemByValue() fail a2ae not exits v=%#v e=%#v\n", v, e)
 		return nil
 	}
 
